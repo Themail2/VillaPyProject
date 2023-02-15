@@ -274,7 +274,60 @@ class GameGrid():
                             if self.container[12-row][7-col+1].color == "Empty":
                                 self.container[12-row][7-col+1] = self.container[12-row][7-col]
                                 self.container[12-row][7-col] = Puyo("Empty", False, None)
-      
+        if event == "CounterClockwise":
+            moved = False
+            for row in range(len(self.container)):
+                for col in range(len(self.container[row])):
+                    if self.container[row][col].isMoving == True:
+                        if self.container[row][col].masterSlave == "Slave":
+                            if col+1 <= 7:
+                                if self.container[row][col+1].masterSlave == "Master":
+                                    #We know the master Puyo is to the right of the slave Puyo
+                                    if row+1 <= 12:
+                                        if moved == False:
+                                            if self.container[row+1][col+1].color == "Empty":
+                                                print("right")
+                                                # Move it right and down
+                                                self.container[row+1][col+1] = self.container[row][col]
+                                                self.container[row][col] = Puyo("Empty", False, None)
+                                                moved = True
+                                       
+                            if col-1 >= 0:
+                                if self.container[row][col-1].masterSlave == "Master":
+                                    #We know the master Puyo is to the left of the slave Puyo
+                                    if row-1 >= 0:
+                                        if moved == False:
+                                            if self.container[row-1][col-1].color == "Empty":
+                                                print("left")
+                                                #Move it up and left
+                                                self.container[row-1][col-1] = self.container[row][col]
+                                                self.container[row][col] = Puyo("Empty", False, None)
+                                                moved = True
+                            if row+1 <= 12:
+                                if self.container[row+1][col].masterSlave == "Master":
+                                    #We know the master Puyo is below the slave Puyo
+                                    if col-1 >= 0:
+                                        if moved == False:
+                                            if self.container[row+1][col-1].color == "Empty":
+                                                print("below")
+                                                #Move it left and down
+                                                self.container[row+1][col-1] = self.container[row][col]
+                                                self.container[row][col] = Puyo("Empty", False, None)
+                                                moved = True
+                            if row-1 >= 0:
+                                if self.container[row-1][col].masterSlave == "Master":
+                                    #We know the master Puyo is above the slave Puyo
+                                    if col+1 <= 7:
+                                        if moved ==  False:
+                                            print("above")
+                                            #Move it right and up
+                                            if self.container[row-1][col+1].color == "Empty":
+                                                self.container[row-1][col+1] = self.container[row][col]
+                                                self.container[row][col] = Puyo("Empty", False, None)
+                                                moved = True
+                                        
+                                
+                                
         
 # MAIN GAME LOOP
 def main():
@@ -288,11 +341,11 @@ def main():
     # Bool for losing
     youLose = False
     # Manually populate the grid
-    grid.container[1][1] = Puyo("Blue", False, None)
-    grid.container[2][1] = Puyo("Blue", False, None)
-    grid.container[5][1] = Puyo("Blue", False, None)
-    grid.container[12][1] = Puyo("Blue", False, None)
-    grid.container[8][1] = Puyo("Blue", False, None)
+    #grid.container[1][1] = Puyo("Blue", False, None)
+    #grid.container[2][1] = Puyo("Blue", False, None)
+    #grid.container[5][1] = Puyo("Blue", False, None)
+    #grid.container[12][1] = Puyo("Blue", False, None)
+    #grid.container[8][1] = Puyo("Blue", False, None)
     
     #Key press buffer
     keyBuffer = None
@@ -308,13 +361,11 @@ def main():
             if event.type == pygame.QUIT:
                     run = False
                     pygame.quit()
-            
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RIGHT:
                     keyBuffer = "Right"
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    
                     keyBuffer = "Left"
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
@@ -324,7 +375,7 @@ def main():
                     keyBuffer = "Clockwise"
                     
         # Calling movePuyos every 5 frames give the play some more control
-        if frames % 5 == 0:
+        if frames % 2 == 0:
             #Calls movePuyos to move Puyos based on key presses, then resets the keybuffer
             grid.movePuyos(keyBuffer)  
             keyBuffer = None 
