@@ -16,7 +16,7 @@
     \|__|     \|_______|\___/ /        \|_______|
                        \|___|/                              
 
-Created By: Tanner Balk | Brett Pirro
+Created By: Tanner Balk | Brett Pirro | Madeline Bell
 ------------------------------------------------
 For issues with the project please email:
 balkta@villa.edu
