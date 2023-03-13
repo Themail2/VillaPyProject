@@ -27,6 +27,7 @@
 import pygame
 import random
 import socket
+import Ui
 #We Initialize the window handle, window name, and constants before Class and Function delcarations for readablity
 
 # Width and height for game window to be drawn 
@@ -331,34 +332,7 @@ class GameGrid():
 
 
 
-#Class created for managing the connection between client and server
-class Networking:
-    #Net Vals on inital
-    def __init__(self):
-        self.client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        self.server=""#need ipv4 address of hosting comp for local connections 
-        self.port=5555
-        self.addr=(self.server,self.port)
-        self.PuyoPos=self.connect()
-    #returns a 2d list of puyo positions 
-    def  getPuyoPos(self):
-        return self.PuyoPos
 
-
-    #Connects client to server
-    def connect(self):
-       try:
-            self.client.connect(self.addr)
-            return self.client.recv(3000).decode()
-        except:
-           pass
-    #sends data to the sever script
-    def sendData(self,data):
-        try:
-            self.client.send(str.encode(data))
-            return self.client.recv(3000).decode()
-        except socket.error as e
-            print(e)
 
 
 
