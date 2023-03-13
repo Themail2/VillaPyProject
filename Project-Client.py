@@ -28,7 +28,17 @@ import pygame
 import random
 import socket
 import Ui
+from enum import Enum, unique
 #We Initialize the window handle, window name, and constants before Class and Function delcarations for readablity
+
+
+class state(Enum):
+    Menu=1
+    Game=2
+    GameOver=3
+
+
+
 
 # Width and height for game window to be drawn 
 width = 409
