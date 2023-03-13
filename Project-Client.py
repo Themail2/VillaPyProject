@@ -37,7 +37,7 @@ class state(Enum):
     Game=2
     GameOver=3
 
-
+GameState=state(state.Menu)
 
 
 # Width and height for game window to be drawn 
@@ -358,96 +358,106 @@ class GameGrid():
         
 # MAIN GAME LOOP
 def main():
-    run = True
-    
 
-
-    # Used to manage how fast the screen updates
-    clock = pygame.time.Clock()
-    # Instanciates the GameGrid Object
-    grid = GameGrid()
-    # Frame counter
-    frames = 0
-    # Bool for losing
-    youLose = False
-    # Manually populate the grid
-    #grid.container[1][1] = Puyo("Blue", False, None)
-    #grid.container[2][1] = Puyo("Blue", False, None)
-    #grid.container[5][1] = Puyo("Blue", False, None)
-    #grid.container[12][1] = Puyo("Blue", False, None)
-    #grid.container[8][1] = Puyo("Blue", False, None)
-    
-    #Key press buffer
-    keyBuffer = None
-    while run:
-        # Forces the game logic to run 60 times per second
-        clock.tick(60)  
-        #increment the frame counter
-        frames += 1
-        
-        
-        # Loops through the pygame event stack and checks if the program was closed, key events, etc.
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                    run = False
-                    pygame.quit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RIGHT:
-                    keyBuffer = "Right"
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    keyBuffer = "Left"
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_a:
-                    keyBuffer = "CounterClockwise"
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_d:
-                    keyBuffer = "Clockwise"
-                    
-        # Calling movePuyos every 5 frames give the play some more control
-        if frames % 2 == 0:
-            #Calls movePuyos to move Puyos based on key presses, then resets the keybuffer
-            grid.movePuyos(keyBuffer)  
-            keyBuffer = None 
-            
-        if frames == 30:
-            #Calls movePuyos to move Puyos based on key presses, then resets the keybuffer
-            
-            
-            # Need to check chains when grid.gravity() returns False
-            if grid.gravity() == False:
-                # If checkChains returns false, there were no chains, so we need to send more Puyos
-                if grid.checkChains() == False:
-                    # If we can't send more Puyos, you have lost the game
-                    if grid.spawnPuyos() == False:
-                        #You Lose
-                        youLose = True
-                        
-            
-        if frames == 60:
-            
-            # grid.gravity() moves the Puyos on the screen if they need to be moved
-            # When grid.gravity() returns False, we need to check for chains
-            if grid.gravity() == False:
-                # If checkChains returns false, there were no chains, so we need to send more Puyos
-                if grid.checkChains() == False:
-                    # If we can't send more Puyos, you have lost the game
-                    if grid.spawnPuyos() == False:
-                        #You Lose
-                        youLose = True
-            # If we are on the 60th frame, reset the frame counter to 0   
+        if(GameState==state.Game):
+            run = True
+            # Used to manage how fast the screen updates
+            clock = pygame.time.Clock()
+            # Instanciates the GameGrid Object
+            grid = GameGrid()
+            # Frame counter
             frames = 0
-        # Draws the game grid
-        if youLose != True:
-            grid.drawGrid()  
+            # Bool for losing
+            youLose = False
+            # Manually populate the grid
+            #grid.container[1][1] = Puyo("Blue", False, None)
+            #grid.container[2][1] = Puyo("Blue", False, None)
+            #grid.container[5][1] = Puyo("Blue", False, None)
+            #grid.container[12][1] = Puyo("Blue", False, None)
+            #grid.container[8][1] = Puyo("Blue", False, None)
+            
+            #Key press buffer
+            keyBuffer = None
+            while run:
+                # Forces the game logic to run 60 times per second
+                clock.tick(60)  
+                #increment the frame counter
+                frames += 1
+                
+                
+                # Loops through the pygame event stack and checks if the program was closed, key events, etc.
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                            run = False
+                            pygame.quit()
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_RIGHT:
+                            keyBuffer = "Right"
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_LEFT:
+                            keyBuffer = "Left"
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_a:
+                            keyBuffer = "CounterClockwise"
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_d:
+                            keyBuffer = "Clockwise"
+                            
+                # Calling movePuyos every 5 frames give the play some more control
+                if frames % 2 == 0:
+                    #Calls movePuyos to move Puyos based on key presses, then resets the keybuffer
+                    grid.movePuyos(keyBuffer)  
+                    keyBuffer = None 
+                    
+                if frames == 30:
+                    #Calls movePuyos to move Puyos based on key presses, then resets the keybuffer
+                    
+                    
+                    # Need to check chains when grid.gravity() returns False
+                    if grid.gravity() == False:
+                        # If checkChains returns false, there were no chains, so we need to send more Puyos
+                        if grid.checkChains() == False:
+                            # If we can't send more Puyos, you have lost the game
+                            if grid.spawnPuyos() == False:
+                                #You Lose
+                                youLose = True
+                                
+                    
+                if frames == 60:
+                    
+                    # grid.gravity() moves the Puyos on the screen if they need to be moved
+                    # When grid.gravity() returns False, we need to check for chains
+                    if grid.gravity() == False:
+                        # If checkChains returns false, there were no chains, so we need to send more Puyos
+                        if grid.checkChains() == False:
+                            # If we can't send more Puyos, you have lost the game
+                            if grid.spawnPuyos() == False:
+                                #You Lose
+                                youLose = True
+                    # If we are on the 60th frame, reset the frame counter to 0   
+                    frames = 0
+                # Draws the game grid
+                if youLose != True:
+                    grid.drawGrid()  
+                else:
+                    #Put a lose screen here or somethin
+                    print("YOU LOSE")
+                    pygame.quit()
+                
+        elif(GameState==state.Menu):
+            print("Menu")
+        
         else:
-            #Put a lose screen here or somethin
-            print("YOU LOSE")
-            pygame.quit()
-          
+            print("GameOver")
+        
+        
+        
         # Updates the screen
         pygame.display.flip()
                   
     
 # Calls the main game loop
 main()
+
+
+
