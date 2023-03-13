@@ -27,9 +27,42 @@
 import pygame
 import random
 import socket
-import Ui
+
 from enum import Enum, unique
 #We Initialize the window handle, window name, and constants before Class and Function delcarations for readablity
+
+
+
+import sys
+
+pygame.init()
+main_font = pygame.font.SysFont("cambria", 50)
+
+class Button():
+	def __init__(self, image, x_pos, y_pos, text_input):
+		self.image = image
+		self.x_pos = x_pos
+		self.y_pos = y_pos
+		self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
+		self.text_input = text_input
+		self.text = main_font.render(self.text_input, True, "white")
+		self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
+
+	def update(self):
+		win.blit(self.image, self.rect)
+		win.blit(self.text, self.text_rect)
+
+	def checkForInput(self, position):
+		if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
+			print("Button Press!")
+
+	def changeColor(self, position):
+		if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
+			self.text = main_font.render(self.text_input, True, "green")
+		else:
+			self.text = main_font.render(self.text_input, True, "white")
+
+
 
 
 class state(Enum):
@@ -445,15 +478,44 @@ def main():
                     pygame.quit()
                 
         elif(GameState==state.Menu):
-            print("Menu")
-        
+            while True:
+
+                play_button_surface = pygame.image.load("Start_button.png")
+                play_button_surface = pygame.transform.scale(play_button_surface, (300, 100))
+                quit_button_surface = pygame.image.load("Quit_button.png")
+                quit_button_surface = pygame.transform.scale(quit_button_surface, (300, 100))
+
+                play_button = Button(play_button_surface, 205, 200, "Play")
+                score_button = Button(play_button_surface, 205, 350, "Score Board")
+                quit_button = Button(quit_button_surface, 205, 500, "Quit")
+
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        play_button.checkForInput(pygame.mouse.get_pos())
+                        quit_button.checkForInput(pygame.mouse.get_pos())
+                        score_button.checkForInput(pygame.mouse.get_pos())
+                win.fill("black")
+
+                play_button.update()
+                quit_button.update()
+                score_button.update()
+
+                #play_button.changeColor(pygame.mouse.get_pos())
+                #score_button.changeColor(pygame.mouse.get_pos())
+                #quit_button.changeColor(pygame.mouse.get_pos())
+
+                pygame.display.update()
+                        
+                # Updates the screen
+                pygame.display.flip()
         else:
             print("GameOver")
         
         
-        
-        # Updates the screen
-        pygame.display.flip()
+   
                   
     
 # Calls the main game loop
