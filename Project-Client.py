@@ -65,9 +65,9 @@ class Button():
         if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
             return True
 
-    def changeColor(self, position):
+    def changeColor(self, position, color):
         if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
-            self.text = main_font.render(self.text_input, True, "green")
+            self.text = main_font.render(self.text_input, True, color)
         else:
             self.text = main_font.render(self.text_input, True, "white")
 
@@ -426,7 +426,8 @@ def main():
             clock.tick(60)  
                 #increment the frame counter
             frames += 1
-                
+
+            new_screen = False   
                 
                 # Loops through the pygame event stack and checks if the program was closed, key events, etc.
             for event in pygame.event.get():
@@ -485,9 +486,16 @@ def main():
             else:
                 #Put a lose screen here or somethin
                 print("YOU LOSE")
-                pygame.quit()
+                new_screen = True
+                GameState=state(state.Menu)
+                
+
             pygame.display.update()
-            pygame.display.flip()  
+            pygame.display.flip()
+            if new_screen == True:
+                win.fill("black")
+                pygame.display.update()
+                pygame.display.flip() 
 
         elif(GameState==state.Menu):
           
@@ -525,15 +533,15 @@ def main():
                             
                 win.fill("black")
 
+
+
+                play_button.changeColor(pygame.mouse.get_pos(), "green")
+                score_button.changeColor(pygame.mouse.get_pos(), "green")
+                quit_button.changeColor(pygame.mouse.get_pos(), "red")
+
                 play_button.update()
                 quit_button.update()
-                score_button.update()
-
-                #play_button.changeColor(pygame.mouse.get_pos())
-                #score_button.changeColor(pygame.mouse.get_pos())
-                #quit_button.changeColor(pygame.mouse.get_pos())
-
-              
+                score_button.update()              
                         
                 # Updates the screen
                 pygame.display.update()
