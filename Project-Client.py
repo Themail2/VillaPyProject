@@ -44,35 +44,32 @@ class state(Enum):
     Game=2
     GameOver=3
 
-GameState=state(state.Game)
-
 
 class Button():
-	def __init__(self, image, x_pos, y_pos, text_input):
-		self.image = image
-		self.x_pos = x_pos
-		self.y_pos = y_pos
-		self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
-		self.text_input = text_input
-		self.text = main_font.render(self.text_input, True, "white")
-		self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
-       
 
-	def update(self):
-		win.blit(self.image, self.rect)
-		win.blit(self.text, self.text_rect)
+    def __init__(self, image, x_pos, y_pos, text_input):
+        self.image = image
+        self.x_pos = x_pos
+        self.y_pos = y_pos
+        self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
+        self.text_input = text_input
+        self.text = main_font.render(self.text_input, True, "white")
+        self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
+    
 
-	def checkForInput(self, position,id):
-		if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
-			GameState=id
-            
-            
+    def update(self):
+        win.blit(self.image, self.rect)
+        win.blit(self.text, self.text_rect)
 
-	def changeColor(self, position):
-		if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
-			self.text = main_font.render(self.text_input, True, "green")
-		else:
-			self.text = main_font.render(self.text_input, True, "white")
+    def checkForInput(self, position):
+        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
+            return True
+
+    def changeColor(self, position):
+        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
+            self.text = main_font.render(self.text_input, True, "green")
+        else:
+            self.text = main_font.render(self.text_input, True, "white")
 
 
 
@@ -398,6 +395,8 @@ class GameGrid():
 # MAIN GAME LOOP
 def main():
 
+    GameState=state(state.Menu)
+
     run = True
             # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
@@ -487,7 +486,9 @@ def main():
                 #Put a lose screen here or somethin
                 print("YOU LOSE")
                 pygame.quit()
-                
+            pygame.display.update()
+            pygame.display.flip()  
+
         elif(GameState==state.Menu):
           
 
@@ -500,14 +501,28 @@ def main():
                 score_button = Button(play_button_surface, 205, 350, "Score Board")
                 quit_button = Button(quit_button_surface, 205, 500, "Quit")
 
+                new_screen = False
+
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
                         sys.exit()
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        play_button.checkForInput(pygame.mouse.get_pos(),state.Game)
-                        quit_button.checkForInput(pygame.mouse.get_pos(),state.Game)
-                        score_button.checkForInput(pygame.mouse.get_pos(),state.Game)
+
+                        if play_button.checkForInput(pygame.mouse.get_pos()) == True:
+                            print("The game opened I promise")
+                            new_screen = True
+                            GameState=state(state.Game)
+                            
+                        if quit_button.checkForInput(pygame.mouse.get_pos()) == True:
+                            pygame.quit()
+                            sys.exit()
+
+                        if score_button.checkForInput(pygame.mouse.get_pos()) == True:
+                            print("This is a score board")
+                            new_screen = True
+                            #GameState=state(state.Game)
+                            
                 win.fill("black")
 
                 play_button.update()
@@ -521,10 +536,16 @@ def main():
               
                         
                 # Updates the screen
+                pygame.display.update()
+                pygame.display.flip()
+                if new_screen == True:
+                    win.fill("black")
+                    pygame.display.update()
+                    pygame.display.flip()
+                    
         else:
             print("GameOver")
-        pygame.display.update()
-        pygame.display.flip()
+
         
    
                   
