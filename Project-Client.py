@@ -43,6 +43,7 @@ class state(Enum):
     Menu=1
     Game=2
     GameOver=3
+    ScoreBoard=4
 
 
 class Button():
@@ -107,6 +108,11 @@ yellowPuyo = pygame.image.load("YellowPuyo.png").convert()
 gridWidth = 50
 gridHeight = 50
 gridMargin = 1
+
+
+score=0
+
+font=pygame.font.Font('freesansbold.ttf',32)
 
 
 
@@ -256,6 +262,7 @@ class GameGrid():
                     # After looping through the list of tails, we have a new set of tails, so,
                     # get rid of the original set and loop through the new ones.   
                     #print( tempTails)
+                    
                     tails = tempTails
                     #print("Tails List after for loop: ", tails)
                 # If chain is valid length, remove the Puyos in combo
@@ -426,7 +433,7 @@ def main():
             clock.tick(60)  
                 #increment the frame counter
             frames += 1
-                
+            
                 
                 # Loops through the pygame event stack and checks if the program was closed, key events, etc.
             for event in pygame.event.get():
@@ -460,6 +467,7 @@ def main():
                 if grid.gravity() == False:
                     # If checkChains returns false, there were no chains, so we need to send more Puyos
                     if grid.checkChains() == False:
+                       
                         # If we can't send more Puyos, you have lost the game
                         if grid.spawnPuyos() == False:
                             #You Lose
@@ -482,10 +490,21 @@ def main():
             # Draws the game grid
             if youLose != True:
                 grid.drawGrid()  
+                text=font.render(f'Score: {score}',True,WHITE,BLACK)
+                
+                textRect=text.get_rect()
+
+                textRect.midright = (width, 38)
+
+
+                win.blit(text,textRect)
             else:
                 #Put a lose screen here or somethin
-                print("YOU LOSE")
-                pygame.quit()
+                
+                 GameState=state(state.Menu)
+                 
+                 
+                 
             pygame.display.update()
             pygame.display.flip()  
 
@@ -519,8 +538,7 @@ def main():
                             sys.exit()
 
                         if score_button.checkForInput(pygame.mouse.get_pos()) == True:
-                            print("This is a score board")
-                            new_screen = True
+                            GameState=state(state.ScoreBoard)
                             #GameState=state(state.Game)
                             
                 win.fill("black")
@@ -542,7 +560,52 @@ def main():
                     win.fill("black")
                     pygame.display.update()
                     pygame.display.flip()
-                    
+        elif(GameState==state.ScoreBoard):
+              
+
+
+
+
+                menu_button_surface = pygame.image.load("Start_button.png")
+                menu_button_surface = pygame.transform.scale(menu_button_surface, (300, 100))
+
+                menu_button = Button(menu_button_surface, 205, height*.85, "Back")
+
+
+              
+
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+
+                        if menu_button.checkForInput(pygame.mouse.get_pos()) == True:
+                            print("The game opened I promise")
+                            new_screen = True
+                            GameState=state(state.Menu)
+                            
+                            #GameState=state(state.Game)
+               
+                win.fill("black")
+
+                menu_button.update()
+
+
+                #play_button.changeColor(pygame.mouse.get_pos())
+                #score_button.changeColor(pygame.mouse.get_pos())
+                #quit_button.changeColor(pygame.mouse.get_pos())
+
+              
+                        
+                # Updates the screen
+                pygame.display.update()
+                pygame.display.flip()
+
+
+
+
+
         else:
             print("GameOver")
 
