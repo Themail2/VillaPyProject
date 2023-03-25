@@ -47,31 +47,6 @@ class state(Enum):
     YouLose=5
 
 
-class Button():
-
-    def __init__(self, image, x_pos, y_pos, text_input):
-        self.image = image
-        self.x_pos = x_pos
-        self.y_pos = y_pos
-        self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
-        self.text_input = text_input
-        self.text = main_font.render(self.text_input, True, "white")
-        self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
-    
-
-    def update(self):
-        win.blit(self.image, self.rect)
-        win.blit(self.text, self.text_rect)
-
-    def checkForInput(self, position):
-        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
-            return True
-
-    def changeColor(self, position, color):
-        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
-            self.text = main_font.render(self.text_input, True, color)
-        else:
-            self.text = main_font.render(self.text_input, True, "white")
 
 
 
@@ -115,6 +90,40 @@ score=0
 
 font=pygame.font.Font('freesansbold.ttf',32)
 
+def ren_pic(image, x_pos, y_pos):
+    rect = image.get_rect(center=(x_pos, y_pos))
+    win.blit(image, rect)
+
+def ren_text(text, font, x_pos, y_pos):
+    text = font.render(text, True, "white")
+    rect = text.get_rect(center=(x_pos, y_pos))
+    win.blit(text, rect)
+
+class Button():
+
+    def __init__(self, image, x_pos, y_pos, text_input):
+        self.image = image
+        self.x_pos = x_pos
+        self.y_pos = y_pos
+        self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
+        self.text_input = text_input
+        self.text = main_font.render(self.text_input, True, "white")
+        self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
+    
+
+    def update(self):
+        win.blit(self.image, self.rect)
+        win.blit(self.text, self.text_rect)
+
+    def checkForInput(self, position):
+        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
+            return True
+
+    def changeColor(self, position, color):
+        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
+            self.text = main_font.render(self.text_input, True, color)
+        else:
+            self.text = main_font.render(self.text_input, True, "white")
 
 
 class Puyo():
@@ -500,9 +509,8 @@ def main():
 
                 win.blit(text,textRect)
             else:
-                #Put a lose screen here or somethin
-                
-                 GameState=state(state.YouLose)
+                #Put a lose screen here or somethin                
+                GameState=state(state.YouLose)
                  
                  
                  
@@ -586,15 +594,17 @@ def main():
             pygame.display.update()
             pygame.display.flip()
 
+
+
+            
+
         elif(GameState==state.YouLose):
 
-            lose_text_surface = pygame.image.load("Empty_button.png")
-            lose_text = Button(lose_text_surface,205, 300, "You Lose")
-
             menu_button_surface = pygame.image.load("Start_button.png")
-            menu_button_surface = pygame.transform.scale(menu_button_surface, (300, 100))
+            menu_button_surface = pygame.transform.scale(menu_button_surface, (350, 100))
 
-            menu_button = Button(menu_button_surface, 205, height*.85, "Back")
+            menu_button = Button(menu_button_surface, 205, height*.875, "Back To Menu")
+            play_button = Button(menu_button_surface, 205, height*.7, "Play Again")
 
             new_screen = False
 
@@ -607,12 +617,25 @@ def main():
                     if menu_button.checkForInput(pygame.mouse.get_pos()) == True:
                         GameState=state(state.Menu)
                         new_screen = True
+                    if play_button.checkForInput(pygame.mouse.get_pos()) == True:
+                        print("The game opened I promise")
+                        GameState=state(state.Game)
+                        new_screen = True
+
                             
             win.fill("black")
 
+            lose_image = pygame.image.load("Sad_Puyo.png")
+            lose_image = pygame.transform.scale(lose_image, (300, 300))
+            Empty_button = pygame.image.load("Empty_button.png")
+            ren_pic(lose_image, 205, 170)
+            ren_text("You can't be", font, 205, 350)
+            ren_text("this bad...", font, 205, 400)
+
             menu_button.changeColor(pygame.mouse.get_pos(),"green")
+            play_button.changeColor(pygame.mouse.get_pos(), "green")
             menu_button.update()
-            lose_text.update()
+            play_button.update()
 
             pygame.display.update()
             pygame.display.flip()
