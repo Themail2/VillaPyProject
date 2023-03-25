@@ -44,6 +44,7 @@ class state(Enum):
     Game=2
     GameOver=3
     ScoreBoard=4
+    YouLose=5
 
 
 class Button():
@@ -66,9 +67,9 @@ class Button():
         if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
             return True
 
-    def changeColor(self, position):
+    def changeColor(self, position, color):
         if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
-            self.text = main_font.render(self.text_input, True, "green")
+            self.text = main_font.render(self.text_input, True, color)
         else:
             self.text = main_font.render(self.text_input, True, "white")
 
@@ -501,7 +502,7 @@ def main():
             else:
                 #Put a lose screen here or somethin
                 
-                 GameState=state(state.Menu)
+                 GameState=state(state.YouLose)
                  
                  
                  
@@ -510,7 +511,7 @@ def main():
 
         elif(GameState==state.Menu):
           
-
+                #Ceate buttons images and text
                 play_button_surface = pygame.image.load("Start_button.png")
                 play_button_surface = pygame.transform.scale(play_button_surface, (300, 100))
                 quit_button_surface = pygame.image.load("Quit_button.png")
@@ -522,6 +523,7 @@ def main():
 
                 new_screen = False
 
+                #Check for button press and changes game state if press occurs 
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
@@ -539,70 +541,83 @@ def main():
 
                         if score_button.checkForInput(pygame.mouse.get_pos()) == True:
                             GameState=state(state.ScoreBoard)
-                            #GameState=state(state.Game)
+                            new_screen = True
                             
                 win.fill("black")
 
+                #makes buttons change color if mouse is over them
+                play_button.changeColor(pygame.mouse.get_pos(), "green")
+                score_button.changeColor(pygame.mouse.get_pos(), "green")
+                quit_button.changeColor(pygame.mouse.get_pos(), "red")
+
                 play_button.update()
                 quit_button.update()
-                score_button.update()
-
-                #play_button.changeColor(pygame.mouse.get_pos())
-                #score_button.changeColor(pygame.mouse.get_pos())
-                #quit_button.changeColor(pygame.mouse.get_pos())
-
-              
+                score_button.update()             
                         
                 # Updates the screen
                 pygame.display.update()
                 pygame.display.flip()
                 if new_screen == True:
                     win.fill("black")
-                    pygame.display.update()
-                    pygame.display.flip()
+
+
         elif(GameState==state.ScoreBoard):
               
+            menu_button_surface = pygame.image.load("Start_button.png")
+            menu_button_surface = pygame.transform.scale(menu_button_surface, (300, 100))
 
+            menu_button = Button(menu_button_surface, 205, height*.85, "Back")
 
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
 
-
-                menu_button_surface = pygame.image.load("Start_button.png")
-                menu_button_surface = pygame.transform.scale(menu_button_surface, (300, 100))
-
-                menu_button = Button(menu_button_surface, 205, height*.85, "Back")
-
-
-              
-
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-                        sys.exit()
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-
-                        if menu_button.checkForInput(pygame.mouse.get_pos()) == True:
-                            print("The game opened I promise")
-                            new_screen = True
-                            GameState=state(state.Menu)
+                    if menu_button.checkForInput(pygame.mouse.get_pos()) == True:
+                        GameState=state(state.Menu)
                             
-                            #GameState=state(state.Game)
-               
+            win.fill("black")
+
+            menu_button.changeColor(pygame.mouse.get_pos(),"green")
+            menu_button.update()
+                                    
+            # Updates the screen
+            pygame.display.update()
+            pygame.display.flip()
+
+        elif(GameState==state.YouLose):
+
+            lose_text_surface = pygame.image.load("Empty_button.png")
+            lose_text = Button(lose_text_surface,205, 300, "You Lose")
+
+            menu_button_surface = pygame.image.load("Start_button.png")
+            menu_button_surface = pygame.transform.scale(menu_button_surface, (300, 100))
+
+            menu_button = Button(menu_button_surface, 205, height*.85, "Back")
+
+            new_screen = False
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+
+                    if menu_button.checkForInput(pygame.mouse.get_pos()) == True:
+                        GameState=state(state.Menu)
+                        new_screen = True
+                            
+            win.fill("black")
+
+            menu_button.changeColor(pygame.mouse.get_pos(),"green")
+            menu_button.update()
+            lose_text.update()
+
+            pygame.display.update()
+            pygame.display.flip()
+            if new_screen == True:
                 win.fill("black")
-
-                menu_button.update()
-
-
-                #play_button.changeColor(pygame.mouse.get_pos())
-                #score_button.changeColor(pygame.mouse.get_pos())
-                #quit_button.changeColor(pygame.mouse.get_pos())
-
-              
-                        
-                # Updates the screen
-                pygame.display.update()
-                pygame.display.flip()
-
-
 
 
 
