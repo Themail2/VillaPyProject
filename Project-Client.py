@@ -74,12 +74,12 @@ GREY = (90, 90, 90)
 YELLOW = (255, 255, 0)
 
 # Defining sprites for Puyos
-greyPuyo = pygame.image.load("GreyPuyo.png").convert()
-redPuyo = pygame.image.load("RedPuyo.png").convert()
-bluePuyo = pygame.image.load("BluePuyo.png").convert()
-purplePuyo = pygame.image.load("PurplePuyo.png").convert()
-greenPuyo = pygame.image.load("GreenPuyo.png").convert()
-yellowPuyo = pygame.image.load("YellowPuyo.png").convert()
+greyPuyo = pygame.image.load("GreyPuyo.png")
+redPuyo = pygame.image.load("RedPuyo.png")
+bluePuyo = pygame.image.load("BluePuyo.png")
+purplePuyo = pygame.image.load("PurplePuyo.png")
+greenPuyo = pygame.image.load("GreenPuyo.png")
+yellowPuyo = pygame.image.load("YellowPuyo.png")
 # Sizes for the game grid draw function
 gridWidth = 50
 gridHeight = 50
@@ -98,7 +98,11 @@ def ren_text(text, font, x_pos, y_pos):
     rect = text.get_rect(center=(x_pos, y_pos))
     win.blit(text, rect)
 
-
+def LoadBackGround(image):
+    img=pygame.image.load(image)
+    img=pygame.transform.scale(img,(width,height))
+    ren_pic(img,width*.5,height*.5)
+    
 
 
 class Button():
@@ -195,8 +199,7 @@ class GameGrid():
         for row in range(len(self.container)):
             for col in range(len(self.container[row])):
                 # Put correct color object based on data in self.container
-                if self.container[row][col].color == "Empty":
-                    pygame.draw.rect(win, BLACK, [(gridMargin + gridWidth) * col + gridMargin, (gridMargin + gridHeight) * row + gridMargin, gridWidth, gridHeight])
+               
                 if self.container[row][col].color == "Green":
                     win.blit(greenPuyo, (((gridMargin + gridWidth) * col + gridMargin), ((gridMargin + gridHeight) * row + gridMargin)))
                 if self.container[row][col].color == "Red":
@@ -477,7 +480,7 @@ def main():
         
 
 
-            win.fill("black")
+            LoadBackGround("BackGround.png")
             # Manually populate the grid
             #grid.container[1][1] = Puyo("Blue", False, None)
             #grid.container[2][1] = Puyo("Blue", False, None)
@@ -561,7 +564,7 @@ def main():
                 #Put a lose screen here or somethin                
                 GameState=state(state.YouLose)
                 youLose=False
-            
+          
             frameimg=pygame.image.load('Frame.png')
 
             ren_pic(frameimg,width*.5,height*.5)
@@ -569,13 +572,15 @@ def main():
             textRect=text.get_rect()
             textRect.midright = (width, height*.03)
             win.blit(text,textRect)
+           
             pygame.display.update()
             pygame.display.flip()  
 
         elif(GameState==state.Menu):
                 
              
-
+                
+               
 
                 #Crate buttons images and text
                 play_button_surface = pygame.image.load("Start_button.png")
@@ -609,7 +614,7 @@ def main():
                             GameState=state(state.ScoreBoard)
                             
                             
-                win.fill("black")
+                LoadBackGround("BackGround.png")
                 titleimg=pygame.image.load("Title.png")
                 titleimg=pygame.transform.scale(titleimg,(400,200))
                 
@@ -697,7 +702,7 @@ def main():
                         new_screen = True
 
                             
-            win.fill("black")
+            LoadBackGround("BackGround.png")
             
         
 
