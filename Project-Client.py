@@ -26,7 +26,8 @@
 #
 import pygame
 import random
-import socket
+
+
 
 from enum import Enum, unique
 #We Initialize the window handle, window name, and constants before Class and Function delcarations for readablity
@@ -36,15 +37,14 @@ from enum import Enum, unique
 import sys
 
 pygame.init()
-main_font = pygame.font.SysFont("cambria", 50)
+
 
 
 class state(Enum):
     Menu=1
     Game=2
-    GameOver=3
-    ScoreBoard=4
-    YouLose=5
+    ScoreBoard=3
+    YouLose=4
 
 
 
@@ -86,9 +86,8 @@ gridHeight = 50
 gridMargin = 1
 
 
-score=0
-
-font=pygame.font.Font('freesansbold.ttf',32)
+font=pygame.font.Font('ARCADE_I.TTF',25)
+ScoreFont=pygame.font.Font('ARCADE_I.TTF',35)
 
 def ren_pic(image, x_pos, y_pos):
     rect = image.get_rect(center=(x_pos, y_pos))
@@ -99,6 +98,9 @@ def ren_text(text, font, x_pos, y_pos):
     rect = text.get_rect(center=(x_pos, y_pos))
     win.blit(text, rect)
 
+
+
+
 class Button():
 
     def __init__(self, image, x_pos, y_pos, text_input):
@@ -107,7 +109,7 @@ class Button():
         self.y_pos = y_pos
         self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
         self.text_input = text_input
-        self.text = main_font.render(self.text_input, True, "white")
+        self.text = font.render(self.text_input, True, "white")
         self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
     
 
@@ -121,9 +123,45 @@ class Button():
 
     def changeColor(self, position, color):
         if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
-            self.text = main_font.render(self.text_input, True, color)
+            self.text = font.render(self.text_input, True, color)
         else:
-            self.text = main_font.render(self.text_input, True, "white")
+            self.text = font.render(self.text_input, True, "white")
+
+
+
+#test class with title because cool effects
+class spritesheet(object):
+    #Loads File
+    def __init__(self, filename):
+      self.sheet = pygame.image.load(filename).convert()
+      
+    #loads a specific image to a certain rect
+    def LoadImgAt(self, rectangle, colorkey = None):
+
+        rect = pygame.Rect(rectangle)
+        image = pygame.Surface(rect.size).convert()
+        image.blit(self.sheet, (0, 0), rect)
+        if colorkey is not None:
+            if colorkey is -1:
+                colorkey = image.get_at((0,0))
+            image.set_colorkey(colorkey, pygame.RLEACCEL)
+        return image
+    #Load several img's and creates coords 
+    def LoadImgsAt(self, rects, colorkey = None):
+    
+        return [self.image_at(rect, colorkey) for rect in rects]
+    #load a whole reel of images to display animation
+    def LoadImgReel(self, rect, image_count, colorkey = None):
+        tups = [(rect[0]+rect[2]*x, rect[1], rect[2], rect[3])
+                for x in range(image_count)]
+        return self.images_at(tups, colorkey)
+
+
+
+
+
+
+
 
 
 class Puyo():
@@ -142,10 +180,14 @@ class GameGrid():
     #Constructor for GameGrid Object (Only takes self)
     def __init__(self):
         # List Comprehension 😎
+        self.reset()
+
+    def reset(self):
         self.container = [[Puyo("Empty", False, None) for x in range(8)] for y in range(13)]
-        
+        self.score=0
         self.chains = []
         self.finalCoords = []
+    
 
     #Draws the screen based on the contents of self.container()
     def drawGrid(self):
@@ -202,6 +244,7 @@ class GameGrid():
     def checkChains(self):
         # Keeps track of if this function removed a chain when called
         didRemoveChain = False
+       
         # Traverse the 2D array (Top left to Bottom right)
         for row in range(len(self.container)):
             for col in range(len(self.container[row])):
@@ -286,7 +329,7 @@ class GameGrid():
                     didRemoveChain = True
                     #Loop through all combo coords and remove them
                     for coord in combo:
-                        
+                        self.score+=50*(combo.index(coord)+1)
                         self.container[coord[0]][coord[1]] = Puyo("Empty", False, None)     
         return didRemoveChain            
         
@@ -431,6 +474,10 @@ def main():
 
         if(GameState==state.Game):
            
+        
+
+
+            win.fill("black")
             # Manually populate the grid
             #grid.container[1][1] = Puyo("Blue", False, None)
             #grid.container[2][1] = Puyo("Blue", False, None)
@@ -443,8 +490,17 @@ def main():
             clock.tick(60)  
                 #increment the frame counter
             frames += 1
+           
             
-                
+        
+            
+           
+            
+          
+
+
+
+
                 # Loops through the pygame event stack and checks if the program was closed, key events, etc.
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -500,26 +556,28 @@ def main():
             # Draws the game grid
             if youLose != True:
                 grid.drawGrid()  
-                text=font.render(f'Score: {score}',True,WHITE,BLACK)
-                
-                textRect=text.get_rect()
-
-                textRect.midright = (width, 38)
-
-
-                win.blit(text,textRect)
+       
             else:
                 #Put a lose screen here or somethin                
                 GameState=state(state.YouLose)
-                 
-                 
-                 
+                youLose=False
+            
+            frameimg=pygame.image.load('Frame.png')
+
+            ren_pic(frameimg,width*.5,height*.5)
+            text=font.render(f'Score: {grid.score}',True,WHITE,BLACK)
+            textRect=text.get_rect()
+            textRect.midright = (width, height*.03)
+            win.blit(text,textRect)
             pygame.display.update()
             pygame.display.flip()  
 
         elif(GameState==state.Menu):
-          
-                #Ceate buttons images and text
+                
+             
+
+
+                #Crate buttons images and text
                 play_button_surface = pygame.image.load("Start_button.png")
                 play_button_surface = pygame.transform.scale(play_button_surface, (300, 100))
                 quit_button_surface = pygame.image.load("Quit_button.png")
@@ -529,7 +587,7 @@ def main():
                 score_button = Button(play_button_surface, 205, 350, "Score Board")
                 quit_button = Button(quit_button_surface, 205, 500, "Quit")
 
-                new_screen = False
+    
 
                 #Check for button press and changes game state if press occurs 
                 for event in pygame.event.get():
@@ -540,7 +598,7 @@ def main():
 
                         if play_button.checkForInput(pygame.mouse.get_pos()) == True:
                             print("The game opened I promise")
-                            new_screen = True
+                           
                             GameState=state(state.Game)
                             
                         if quit_button.checkForInput(pygame.mouse.get_pos()) == True:
@@ -549,10 +607,17 @@ def main():
 
                         if score_button.checkForInput(pygame.mouse.get_pos()) == True:
                             GameState=state(state.ScoreBoard)
-                            new_screen = True
+                            
                             
                 win.fill("black")
+                titleimg=pygame.image.load("Title.png")
+                titleimg=pygame.transform.scale(titleimg,(400,200))
+                
+                
 
+                
+                
+                ren_pic(titleimg,width*.5,height*.13)
                 #makes buttons change color if mouse is over them
                 play_button.changeColor(pygame.mouse.get_pos(), "green")
                 score_button.changeColor(pygame.mouse.get_pos(), "green")
@@ -565,8 +630,7 @@ def main():
                 # Updates the screen
                 pygame.display.update()
                 pygame.display.flip()
-                if new_screen == True:
-                    win.fill("black")
+             
 
 
         elif(GameState==state.ScoreBoard):
@@ -575,7 +639,7 @@ def main():
             menu_button_surface = pygame.transform.scale(menu_button_surface, (300, 100))
 
             menu_button = Button(menu_button_surface, 205, height*.85, "Back")
-
+            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -586,6 +650,14 @@ def main():
                         GameState=state(state.Menu)
                             
             win.fill("black")
+
+            boardimg=pygame.image.load("board.png")
+            boardimg=pygame.transform.scale(boardimg,(width,height*.6))
+            ren_pic(boardimg,width*.5,height*.35)
+          
+            ren_text('Score-Board :)',font,width*.5,height*.1)
+
+
 
             menu_button.changeColor(pygame.mouse.get_pos(),"green")
             menu_button.update()
@@ -616,21 +688,31 @@ def main():
 
                     if menu_button.checkForInput(pygame.mouse.get_pos()) == True:
                         GameState=state(state.Menu)
+                        grid.reset()
                         new_screen = True
                     if play_button.checkForInput(pygame.mouse.get_pos()) == True:
                         print("The game opened I promise")
                         GameState=state(state.Game)
+                        grid.reset()
                         new_screen = True
 
                             
             win.fill("black")
+            
+        
+
+
 
             lose_image = pygame.image.load("Sad_Puyo.png")
-            lose_image = pygame.transform.scale(lose_image, (300, 300))
+            lose_image = pygame.transform.scale(lose_image, (200, 200))
             Empty_button = pygame.image.load("Empty_button.png")
-            ren_pic(lose_image, 205, 170)
-            ren_text("You can't be", font, 205, 350)
-            ren_text("this bad...", font, 205, 400)
+            ren_pic(lose_image, width*.5, height*.15)
+            ren_text(f"~~~~~~~~~~~", ScoreFont, width*.5, 250)
+            ren_text(f"Score: {grid.score}", ScoreFont, width*.5, 270)
+            ren_text(f"~~~~~~~~~~~", ScoreFont, width*.5, 320)
+
+            ren_text("You can't be", font, width*.5, 350)
+            ren_text("this bad...", font, width*.5, 400)
 
             menu_button.changeColor(pygame.mouse.get_pos(),"green")
             play_button.changeColor(pygame.mouse.get_pos(), "green")
@@ -645,7 +727,7 @@ def main():
 
 
         else:
-            print("GameOver")
+            print("State Does not Exist")
 
         
    
