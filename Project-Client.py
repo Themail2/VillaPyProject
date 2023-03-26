@@ -458,6 +458,12 @@ class GameGrid():
 # MAIN GAME LOOP
 def main():
 
+    pygame.display.set_caption('Puyo-Puyo')
+    
+    pygame.display.set_icon(redPuyo)
+
+
+
     GameState=state(state.Menu)
 
     run = True
@@ -639,7 +645,7 @@ def main():
 
 
         elif(GameState==state.ScoreBoard):
-              
+            
             menu_button_surface = pygame.image.load("Start_button.png")
             menu_button_surface = pygame.transform.scale(menu_button_surface, (300, 100))
 
@@ -654,7 +660,7 @@ def main():
                     if menu_button.checkForInput(pygame.mouse.get_pos()) == True:
                         GameState=state(state.Menu)
                             
-            win.fill("black")
+            LoadBackGround("BackGround.png")
 
             boardimg=pygame.image.load("board.png")
             boardimg=pygame.transform.scale(boardimg,(width,height*.6))
@@ -726,8 +732,6 @@ def main():
 
             pygame.display.update()
             pygame.display.flip()
-            if new_screen == True:
-                win.fill("black")
 
 
 
