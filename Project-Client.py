@@ -17,7 +17,7 @@
 #                       \|___|/                              
 
 
-# A Tanner Balk and Brett Pirro Project
+# A Tanner Balk, Brett Pirro, and Madeline Bell Project
 
 #TO-DO
 # Make game grid, game grid needs to hold puyos, thinking 8x15 (120) tiles on grid 
@@ -26,7 +26,32 @@
 #
 import pygame
 import random
+
+
+
+from enum import Enum, unique
 #We Initialize the window handle, window name, and constants before Class and Function delcarations for readablity
+
+
+
+import sys
+
+pygame.init()
+
+
+
+class state(Enum):
+    Menu=1
+    Game=2
+    ScoreBoard=3
+    YouLose=4
+
+
+
+
+
+
+
 
 # Width and height for game window to be drawn 
 width = 409
@@ -49,16 +74,97 @@ GREY = (90, 90, 90)
 YELLOW = (255, 255, 0)
 
 # Defining sprites for Puyos
-greyPuyo = pygame.image.load("GreyPuyo.png").convert()
-redPuyo = pygame.image.load("RedPuyo.png").convert()
-bluePuyo = pygame.image.load("BluePuyo.png").convert()
-purplePuyo = pygame.image.load("PurplePuyo.png").convert()
-greenPuyo = pygame.image.load("GreenPuyo.png").convert()
-yellowPuyo = pygame.image.load("YellowPuyo.png").convert()
+greyPuyo = pygame.image.load("GreyPuyo.png")
+redPuyo = pygame.image.load("RedPuyo.png")
+bluePuyo = pygame.image.load("BluePuyo.png")
+purplePuyo = pygame.image.load("PurplePuyo.png")
+greenPuyo = pygame.image.load("GreenPuyo.png")
+yellowPuyo = pygame.image.load("YellowPuyo.png")
 # Sizes for the game grid draw function
 gridWidth = 50
 gridHeight = 50
 gridMargin = 1
+
+
+font=pygame.font.Font('ARCADE_I.TTF',25)
+ScoreFont=pygame.font.Font('ARCADE_I.TTF',35)
+
+def ren_pic(image, x_pos, y_pos):
+    rect = image.get_rect(center=(x_pos, y_pos))
+    win.blit(image, rect)
+
+def ren_text(text, font, x_pos, y_pos):
+    text = font.render(text, True, "white")
+    rect = text.get_rect(center=(x_pos, y_pos))
+    win.blit(text, rect)
+
+def LoadBackGround(image):
+    img=pygame.image.load(image)
+    img=pygame.transform.scale(img,(width,height))
+    ren_pic(img,width*.5,height*.5)
+    
+
+
+class Button():
+
+    def __init__(self, image, x_pos, y_pos, text_input):
+        self.image = image
+        self.x_pos = x_pos
+        self.y_pos = y_pos
+        self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
+        self.text_input = text_input
+        self.text = font.render(self.text_input, True, "white")
+        self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
+    
+
+    def update(self):
+        win.blit(self.image, self.rect)
+        win.blit(self.text, self.text_rect)
+
+    def checkForInput(self, position):
+        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
+            return True
+
+    def changeColor(self, position, color):
+        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
+            self.text = font.render(self.text_input, True, color)
+        else:
+            self.text = font.render(self.text_input, True, "white")
+
+
+
+#test class with title because cool effects
+class spritesheet(object):
+    #Loads File
+    def __init__(self, filename):
+      self.sheet = pygame.image.load(filename).convert()
+      
+    #loads a specific image to a certain rect
+    def LoadImgAt(self, rectangle, colorkey = None):
+
+        rect = pygame.Rect(rectangle)
+        image = pygame.Surface(rect.size).convert()
+        image.blit(self.sheet, (0, 0), rect)
+        if colorkey is not None:
+            if colorkey is -1:
+                colorkey = image.get_at((0,0))
+            image.set_colorkey(colorkey, pygame.RLEACCEL)
+        return image
+    #Load several img's and creates coords 
+    def LoadImgsAt(self, rects, colorkey = None):
+    
+        return [self.image_at(rect, colorkey) for rect in rects]
+    #load a whole reel of images to display animation
+    def LoadImgReel(self, rect, image_count, colorkey = None):
+        tups = [(rect[0]+rect[2]*x, rect[1], rect[2], rect[3])
+                for x in range(image_count)]
+        return self.images_at(tups, colorkey)
+
+
+
+
+
+
 
 
 
@@ -78,10 +184,14 @@ class GameGrid():
     #Constructor for GameGrid Object (Only takes self)
     def __init__(self):
         # List Comprehension 😎
+        self.reset()
+
+    def reset(self):
         self.container = [[Puyo("Empty", False, None) for x in range(8)] for y in range(13)]
-        
+        self.score=0
         self.chains = []
         self.finalCoords = []
+    
 
     #Draws the screen based on the contents of self.container()
     def drawGrid(self):
@@ -89,8 +199,7 @@ class GameGrid():
         for row in range(len(self.container)):
             for col in range(len(self.container[row])):
                 # Put correct color object based on data in self.container
-                if self.container[row][col].color == "Empty":
-                    pygame.draw.rect(win, BLACK, [(gridMargin + gridWidth) * col + gridMargin, (gridMargin + gridHeight) * row + gridMargin, gridWidth, gridHeight])
+               
                 if self.container[row][col].color == "Green":
                     win.blit(greenPuyo, (((gridMargin + gridWidth) * col + gridMargin), ((gridMargin + gridHeight) * row + gridMargin)))
                 if self.container[row][col].color == "Red":
@@ -138,6 +247,7 @@ class GameGrid():
     def checkChains(self):
         # Keeps track of if this function removed a chain when called
         didRemoveChain = False
+       
         # Traverse the 2D array (Top left to Bottom right)
         for row in range(len(self.container)):
             for col in range(len(self.container[row])):
@@ -208,6 +318,7 @@ class GameGrid():
                     # After looping through the list of tails, we have a new set of tails, so,
                     # get rid of the original set and loop through the new ones.   
                     #print( tempTails)
+                    
                     tails = tempTails
                     #print("Tails List after for loop: ", tails)
                 # If chain is valid length, remove the Puyos in combo
@@ -221,7 +332,7 @@ class GameGrid():
                     didRemoveChain = True
                     #Loop through all combo coords and remove them
                     for coord in combo:
-                        
+                        self.score+=50*(combo.index(coord)+1)
                         self.container[coord[0]][coord[1]] = Puyo("Empty", False, None)     
         return didRemoveChain            
         
@@ -327,97 +438,312 @@ class GameGrid():
                                                 moved = True
                                         
                                 
-                                
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         
 # MAIN GAME LOOP
 def main():
-    run = True
-    # Used to manage how fast the screen updates
-    clock = pygame.time.Clock()
-    # Instanciates the GameGrid Object
-    grid = GameGrid()
-    # Frame counter
-    frames = 0
-    # Bool for losing
-    youLose = False
-    # Manually populate the grid
-    #grid.container[1][1] = Puyo("Blue", False, None)
-    #grid.container[2][1] = Puyo("Blue", False, None)
-    #grid.container[5][1] = Puyo("Blue", False, None)
-    #grid.container[12][1] = Puyo("Blue", False, None)
-    #grid.container[8][1] = Puyo("Blue", False, None)
+
+    pygame.display.set_caption('Puyo-Puyo')
     
-    #Key press buffer
+    pygame.display.set_icon(redPuyo)
+
+
+
+    GameState=state(state.Menu)
+
+    run = True
+            # Used to manage how fast the screen updates
+    clock = pygame.time.Clock()
+            # Instanciates the GameGrid Object
+    grid = GameGrid()
+            # Frame counter
+    frames = 0
+            # Bool for losing
+    youLose = False
+
+
     keyBuffer = None
     while run:
-        # Forces the game logic to run 60 times per second
-        clock.tick(60)  
-        #increment the frame counter
-        frames += 1
+                
+
+        if(GameState==state.Game):
+           
         
+
+
+            LoadBackGround("BackGround.png")
+            # Manually populate the grid
+            #grid.container[1][1] = Puyo("Blue", False, None)
+            #grid.container[2][1] = Puyo("Blue", False, None)
+            #grid.container[5][1] = Puyo("Blue", False, None)
+            #grid.container[12][1] = Puyo("Blue", False, None)
+            #grid.container[8][1] = Puyo("Blue", False, None)
+            
+            #Key press buffer
+             # Forces thegame logic to run 60 times per second
+            clock.tick(60)  
+                #increment the frame counter
+            frames += 1
+           
+            
         
-        # Loops through the pygame event stack and checks if the program was closed, key events, etc.
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                    run = False
-                    pygame.quit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RIGHT:
-                    keyBuffer = "Right"
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    keyBuffer = "Left"
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_a:
-                    keyBuffer = "CounterClockwise"
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_d:
-                    keyBuffer = "Clockwise"
-                    
-        # Calling movePuyos every 5 frames give the play some more control
-        if frames % 2 == 0:
-            #Calls movePuyos to move Puyos based on key presses, then resets the keybuffer
-            grid.movePuyos(keyBuffer)  
-            keyBuffer = None 
             
-        if frames == 30:
-            #Calls movePuyos to move Puyos based on key presses, then resets the keybuffer
+           
             
-            
-            # Need to check chains when grid.gravity() returns False
-            if grid.gravity() == False:
-                # If checkChains returns false, there were no chains, so we need to send more Puyos
-                if grid.checkChains() == False:
-                    # If we can't send more Puyos, you have lost the game
-                    if grid.spawnPuyos() == False:
-                        #You Lose
-                        youLose = True
-                        
-            
-        if frames == 60:
-            
-            # grid.gravity() moves the Puyos on the screen if they need to be moved
-            # When grid.gravity() returns False, we need to check for chains
-            if grid.gravity() == False:
-                # If checkChains returns false, there were no chains, so we need to send more Puyos
-                if grid.checkChains() == False:
-                    # If we can't send more Puyos, you have lost the game
-                    if grid.spawnPuyos() == False:
-                        #You Lose
-                        youLose = True
-            # If we are on the 60th frame, reset the frame counter to 0   
-            frames = 0
-        # Draws the game grid
-        if youLose != True:
-            grid.drawGrid()  
-        else:
-            #Put a lose screen here or somethin
-            print("YOU LOSE")
-            pygame.quit()
           
-        # Updates the screen
-        pygame.display.flip()
+
+
+
+
+                # Loops through the pygame event stack and checks if the program was closed, key events, etc.
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                        run = False
+                        pygame.quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RIGHT:
+                        keyBuffer = "Right"
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:
+                        keyBuffer = "Left"
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_a:
+                        keyBuffer = "CounterClockwise"
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_d:
+                        keyBuffer = "Clockwise"
+                        
+            # Calling movePuyos every 5 frames give the play some more control
+            if frames % 2 == 0:
+                #Calls movePuyos to move Puyos based on key presses, then resets the keybuffer
+                grid.movePuyos(keyBuffer)  
+                keyBuffer = None 
+                
+            if frames == 30:
+                #Calls movePuyos to move Puyos based on key presses, then resets the keybuffer
+                
+                
+                # Need to check chains when grid.gravity() returns False
+                if grid.gravity() == False:
+                    # If checkChains returns false, there were no chains, so we need to send more Puyos
+                    if grid.checkChains() == False:
+                       
+                        # If we can't send more Puyos, you have lost the game
+                        if grid.spawnPuyos() == False:
+                            #You Lose
+                            youLose = True
+                            
+                
+            if frames == 60:
+                
+                # grid.gravity() moves the Puyos on the screen if they need to be moved
+                # When grid.gravity() returns False, we need to check for chains
+                if grid.gravity() == False:
+                    # If checkChains returns false, there were no chains, so we need to send more Puyos
+                    if grid.checkChains() == False:
+                        # If we can't send more Puyos, you have lost the game
+                        if grid.spawnPuyos() == False:
+                            #You Lose
+                            youLose = True
+                # If we are on the 60th frame, reset the frame counter to 0   
+                frames = 0
+            # Draws the game grid
+            if youLose != True:
+                grid.drawGrid()  
+       
+            else:
+                #Put a lose screen here or somethin                
+                GameState=state(state.YouLose)
+                youLose=False
+          
+            frameimg=pygame.image.load('Frame.png')
+
+            ren_pic(frameimg,width*.5,height*.5)
+            text=font.render(f'Score: {grid.score}',True,WHITE,BLACK)
+            textRect=text.get_rect()
+            textRect.midright = (width, height*.03)
+            win.blit(text,textRect)
+           
+            pygame.display.update()
+            pygame.display.flip()  
+
+        elif(GameState==state.Menu):
+                
+             
+                
+               
+
+                #Crate buttons images and text
+                play_button_surface = pygame.image.load("Start_button.png")
+                play_button_surface = pygame.transform.scale(play_button_surface, (300, 100))
+                quit_button_surface = pygame.image.load("Quit_button.png")
+                quit_button_surface = pygame.transform.scale(quit_button_surface, (300, 100))
+
+                play_button = Button(play_button_surface, 205, 200, "Play")
+                score_button = Button(play_button_surface, 205, 350, "Score Board")
+                quit_button = Button(quit_button_surface, 205, 500, "Quit")
+
+    
+
+                #Check for button press and changes game state if press occurs 
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+
+                        if play_button.checkForInput(pygame.mouse.get_pos()) == True:
+                            print("The game opened I promise")
+                           
+                            GameState=state(state.Game)
+                            
+                        if quit_button.checkForInput(pygame.mouse.get_pos()) == True:
+                            pygame.quit()
+                            sys.exit()
+
+                        if score_button.checkForInput(pygame.mouse.get_pos()) == True:
+                            GameState=state(state.ScoreBoard)
+                            
+                            
+                LoadBackGround("BackGround.png")
+                titleimg=pygame.image.load("Title.png")
+                titleimg=pygame.transform.scale(titleimg,(400,200))
+                
+                
+
+                
+                
+                ren_pic(titleimg,width*.5,height*.13)
+                #makes buttons change color if mouse is over them
+                play_button.changeColor(pygame.mouse.get_pos(), "green")
+                score_button.changeColor(pygame.mouse.get_pos(), "green")
+                quit_button.changeColor(pygame.mouse.get_pos(), "red")
+
+                play_button.update()
+                quit_button.update()
+                score_button.update()             
+                        
+                # Updates the screen
+                pygame.display.update()
+                pygame.display.flip()
+             
+
+
+        elif(GameState==state.ScoreBoard):
+            
+            menu_button_surface = pygame.image.load("Start_button.png")
+            menu_button_surface = pygame.transform.scale(menu_button_surface, (300, 100))
+
+            menu_button = Button(menu_button_surface, 205, height*.85, "Back")
+            
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+
+                    if menu_button.checkForInput(pygame.mouse.get_pos()) == True:
+                        GameState=state(state.Menu)
+                            
+            LoadBackGround("BackGround.png")
+
+            boardimg=pygame.image.load("board.png")
+            boardimg=pygame.transform.scale(boardimg,(width,height*.6))
+            ren_pic(boardimg,width*.5,height*.35)
+          
+            ren_text('Score-Board :)',font,width*.5,height*.1)
+
+
+
+            menu_button.changeColor(pygame.mouse.get_pos(),"green")
+            menu_button.update()
+                                    
+            # Updates the screen
+            pygame.display.update()
+            pygame.display.flip()
+
+
+
+            
+
+        elif(GameState==state.YouLose):
+
+            menu_button_surface = pygame.image.load("Start_button.png")
+            menu_button_surface = pygame.transform.scale(menu_button_surface, (350, 100))
+
+            menu_button = Button(menu_button_surface, 205, height*.875, "Back To Menu")
+            play_button = Button(menu_button_surface, 205, height*.7, "Play Again")
+
+            new_screen = False
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+
+                    if menu_button.checkForInput(pygame.mouse.get_pos()) == True:
+                        GameState=state(state.Menu)
+                        grid.reset()
+                        new_screen = True
+                    if play_button.checkForInput(pygame.mouse.get_pos()) == True:
+                        print("The game opened I promise")
+                        GameState=state(state.Game)
+                        grid.reset()
+                        new_screen = True
+
+                            
+            LoadBackGround("BackGround.png")
+            
+        
+
+
+
+            lose_image = pygame.image.load("Sad_Puyo.png")
+            lose_image = pygame.transform.scale(lose_image, (200, 200))
+            Empty_button = pygame.image.load("Empty_button.png")
+            ren_pic(lose_image, width*.5, height*.15)
+            ren_text(f"~~~~~~~~~~~", ScoreFont, width*.5, 250)
+            ren_text(f"Score: {grid.score}", ScoreFont, width*.5, 270)
+            ren_text(f"~~~~~~~~~~~", ScoreFont, width*.5, 320)
+
+            ren_text("You can't be", font, width*.5, 350)
+            ren_text("this bad...", font, width*.5, 400)
+
+            menu_button.changeColor(pygame.mouse.get_pos(),"green")
+            play_button.changeColor(pygame.mouse.get_pos(), "green")
+            menu_button.update()
+            play_button.update()
+
+            pygame.display.update()
+            pygame.display.flip()
+
+
+
+        else:
+            print("State Does not Exist")
+
+        
+   
                   
     
 # Calls the main game loop
 main()
+
+
+
