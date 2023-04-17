@@ -24,32 +24,42 @@
 # 
 #
 #
+
+
+#project notes 4/15/23-Brett
+#~~~~Delete this on finalization of project~~~~~
+#-All code is commented and organized into a readable state
+#-added functions for saving scores and reading scores from a json; not implemented into function
+#Whatever is not done by the 16th im just gonna do myself after score rendering im not adding anything else im calling it finished there. I'm to exhausted and busy to add anything major 
+
+
+
+
+
+
+
+
 import pygame
 import random
-
-
-
 from enum import Enum, unique
+import json as serializer
+from json import dumps
+from datetime import date, timedelta
+import operator
+
+
 #We Initialize the window handle, window name, and constants before Class and Function delcarations for readablity
-
-
-
 import sys
 
 pygame.init()
 
 
-
+#an emun used to determine states allowing for an easier read ability then using an int for indexing states
 class state(Enum):
     Menu=1
     Game=2
     ScoreBoard=3
     YouLose=4
-
-
-
-
-
 
 
 
@@ -63,7 +73,6 @@ win = pygame.display.set_mode((width, height))
 # Sets the Window name
 pygame.display.set_caption("Puyo Puyo Client")
 # Colors that will be used in the game
-# Defining them as constants make the code much more readable
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
@@ -86,45 +95,88 @@ gridHeight = 50
 gridMargin = 1
 
 
+#fonts used through out the project
 font=pygame.font.Font('ARCADE_I.TTF',25)
+boardfont=pygame.font.Font('ARCADE_I.TTF',15)
 ScoreFont=pygame.font.Font('ARCADE_I.TTF',35)
 
+SavedScores={}
+
+
 def ren_pic(image, x_pos, y_pos):
+    #takes in the position and image object to render on to screen
     rect = image.get_rect(center=(x_pos, y_pos))
     win.blit(image, rect)
 
 def ren_text(text, font, x_pos, y_pos):
+    #takes in a string for the text to display, a font var to determine the fonts time, and x and y placment on canvas for rendering on the screen
     text = font.render(text, True, "white")
     rect = text.get_rect(center=(x_pos, y_pos))
     win.blit(text, rect)
 
 def LoadBackGround(image):
+    #takes in a string to the location of the image to render the image at that path then center the element and makes its width and height the same as the window itself when rendering
     img=pygame.image.load(image)
     img=pygame.transform.scale(img,(width,height))
     ren_pic(img,width*.5,height*.5)
+
+
+#implement funcs into the youlose state for saving score and scoreboard state for rendering the scores on to the screen
+#will do if i remember or care enough to do either sat or sun
+
+
+#writes to json file with score and date
+def write_score(fileName, date, score):
+    try:
+        scores = read_scores(fileName)
+    except:
+        scores={}
+        print("File does not exist")
+    # add score 
+    scores[date] = score
+    with open(fileName, 'w') as f:
+        serializer.dump(scores, f)
+
+#reads json file with score and date
+def read_scores(fileName):
+    try:
+        #loads file
+        with open(fileName, 'r') as f:
+            scores = serializer.load(f)
+        return scores
+    except IOError:
+        # return empty if no file cause no score
+        return {}
     
 
 
 class Button():
-
+    #constructor for button objects
     def __init__(self, image, x_pos, y_pos, text_input):
+        #image for button backdrop
         self.image = image
+        #button X pos in win
         self.x_pos = x_pos
+        #button Y pos in win
         self.y_pos = y_pos
+        #rect coords for button backdrop
         self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
+        #text of the button
         self.text_input = text_input
+        #font object that renders the string in text input and the font its currently parsing 
         self.text = font.render(self.text_input, True, "white")
+        #rect coords for button text
         self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
     
-
+    #renders the physical button onto the canvas
     def update(self):
         win.blit(self.image, self.rect)
         win.blit(self.text, self.text_rect)
-
+    #checks for mouse input and mouse position to return a true var if the button is pressed 
     def checkForInput(self, position):
         if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
             return True
-
+    #checks the mouse position to determine if it is hovering over the button. the button will update the color of the text depending on mouse pos
     def changeColor(self, position, color):
         if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
             self.text = font.render(self.text_input, True, color)
@@ -458,29 +510,29 @@ class GameGrid():
 # MAIN GAME LOOP
 def main():
 
+    #renders the favicon and window caption for the application
     pygame.display.set_caption('Puyo-Puyo')
-    
     pygame.display.set_icon(redPuyo)
 
 
-
-    GameState=state(state.Menu)
+    #instanitated the game state enum to determine what needs to be rendered
+    GameState=state(state.YouLose)
 
     run = True
-            # Used to manage how fast the screen updates
+    # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
-            # Instanciates the GameGrid Object
+    # Instanciates the GameGrid Object
     grid = GameGrid()
-            # Frame counter
+    # Frame counter
     frames = 0
-            # Bool for losing
+    # Bool for losing
     youLose = False
 
 
     keyBuffer = None
     while run:
                 
-
+        #overall state machine that when state is toggled the conditional will render the diffrent states
         if(GameState==state.Game):
            
         
@@ -500,16 +552,6 @@ def main():
                 #increment the frame counter
             frames += 1
            
-            
-        
-            
-           
-            
-          
-
-
-
-
                 # Loops through the pygame event stack and checks if the program was closed, key events, etc.
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -571,14 +613,18 @@ def main():
                 GameState=state(state.YouLose)
                 youLose=False
           
+            #renders the frame in the main game state
             frameimg=pygame.image.load('Frame.png')
-
             ren_pic(frameimg,width*.5,height*.5)
+            
+            #renders score text and updates accordingly to what the score is in the game grid object
             text=font.render(f'Score: {grid.score}',True,WHITE,BLACK)
             textRect=text.get_rect()
+            #sets postion in the proximity of the midright of the screen
             textRect.midright = (width, height*.03)
             win.blit(text,textRect)
            
+           # Updates the screen
             pygame.display.update()
             pygame.display.flip()  
 
@@ -594,6 +640,7 @@ def main():
                 quit_button_surface = pygame.image.load("Quit_button.png")
                 quit_button_surface = pygame.transform.scale(quit_button_surface, (300, 100))
 
+                #instaniates the buttons class for Play Score and Quit and sets there placement 
                 play_button = Button(play_button_surface, 205, 200, "Play")
                 score_button = Button(play_button_surface, 205, 350, "Score Board")
                 quit_button = Button(quit_button_surface, 205, 500, "Quit")
@@ -608,32 +655,39 @@ def main():
                     if event.type == pygame.MOUSEBUTTONDOWN:
 
                         if play_button.checkForInput(pygame.mouse.get_pos()) == True:
+                            #changes game state to the main game scene
                             print("The game opened I promise")
-                           
                             GameState=state(state.Game)
                             
                         if quit_button.checkForInput(pygame.mouse.get_pos()) == True:
+                            #quits the application
                             pygame.quit()
                             sys.exit()
 
                         if score_button.checkForInput(pygame.mouse.get_pos()) == True:
+                            #changes state to score baord
+                            #grabs data and reads to empty dict
+                            SavedScores=read_scores("SaveData")
+                            SavedScores = dict(sorted(SavedScores.items(), key=operator.itemgetter(1), reverse=True)[:5])
                             GameState=state(state.ScoreBoard)
                             
                             
+                #renders background 
                 LoadBackGround("BackGround.png")
+                
+                #renders the title image
                 titleimg=pygame.image.load("Title.png")
                 titleimg=pygame.transform.scale(titleimg,(400,200))
-                
-                
-
-                
-                
                 ren_pic(titleimg,width*.5,height*.13)
+
+
+
                 #makes buttons change color if mouse is over them
                 play_button.changeColor(pygame.mouse.get_pos(), "green")
                 score_button.changeColor(pygame.mouse.get_pos(), "green")
                 quit_button.changeColor(pygame.mouse.get_pos(), "red")
 
+                #renders all buttons to the screen
                 play_button.update()
                 quit_button.update()
                 score_button.update()             
@@ -645,12 +699,14 @@ def main():
 
 
         elif(GameState==state.ScoreBoard):
-            
+            spacing=.2
+            #instaniates the buttons class for main menu and sets there placement 
             menu_button_surface = pygame.image.load("Start_button.png")
             menu_button_surface = pygame.transform.scale(menu_button_surface, (300, 100))
-
             menu_button = Button(menu_button_surface, 205, height*.85, "Back")
             
+
+            #Check for button press and changes game state if press occurs 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -659,18 +715,25 @@ def main():
 
                     if menu_button.checkForInput(pygame.mouse.get_pos()) == True:
                         GameState=state(state.Menu)
-                            
+            
+            #renders backgrounds 
             LoadBackGround("BackGround.png")
-
+            
+            #renders the board to display scores 
             boardimg=pygame.image.load("board.png")
             boardimg=pygame.transform.scale(boardimg,(width,height*.6))
             ren_pic(boardimg,width*.5,height*.35)
-          
+
+            #renders the title for the score board
             ren_text('Score-Board :)',font,width*.5,height*.1)
+            
+            for item in SavedScores:
+                ren_text(f"Date:{str(item)} Score:{str(item[0])}",boardfont,width*.5,height*spacing)
+                spacing+=.1
 
-
-
+            #changes text on button when hovering over
             menu_button.changeColor(pygame.mouse.get_pos(),"green")
+            #renders all buttons to the screen
             menu_button.update()
                                     
             # Updates the screen
@@ -682,51 +745,58 @@ def main():
             
 
         elif(GameState==state.YouLose):
-
+            #create img for button back drops
             menu_button_surface = pygame.image.load("Start_button.png")
             menu_button_surface = pygame.transform.scale(menu_button_surface, (350, 100))
-
+            #instaniates the buttons class for main menu and sets there placement 
             menu_button = Button(menu_button_surface, 205, height*.875, "Back To Menu")
             play_button = Button(menu_button_surface, 205, height*.7, "Play Again")
 
-            new_screen = False
-
+            #Check for button press and changes game state if press occurs 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    #quits game
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
 
                     if menu_button.checkForInput(pygame.mouse.get_pos()) == True:
+                        #goes to menu and resets the grid object
                         GameState=state(state.Menu)
+                        write_score("SaveData",date.today().strftime("%m/%d/%Y"),grid.score)
                         grid.reset()
-                        new_screen = True
+                   
                     if play_button.checkForInput(pygame.mouse.get_pos()) == True:
+                        #goes to game state and resets the grid object
                         print("The game opened I promise")
                         GameState=state(state.Game)
+                        write_score("SaveData",date.today().strftime("%m/%d/%Y"),grid.score)
                         grid.reset()
-                        new_screen = True
+                       
 
-                            
+            #renders backgrounds                    
             LoadBackGround("BackGround.png")
             
         
 
 
-
+            #gen image object to render image later and give it a bigger size
             lose_image = pygame.image.load("Sad_Puyo.png")
             lose_image = pygame.transform.scale(lose_image, (200, 200))
-            Empty_button = pygame.image.load("Empty_button.png")
+           
+            #renders score text, and other cooresponding images to the window
             ren_pic(lose_image, width*.5, height*.15)
             ren_text(f"~~~~~~~~~~~", ScoreFont, width*.5, 250)
             ren_text(f"Score: {grid.score}", ScoreFont, width*.5, 270)
             ren_text(f"~~~~~~~~~~~", ScoreFont, width*.5, 320)
-
             ren_text("You can't be", font, width*.5, 350)
             ren_text("this bad...", font, width*.5, 400)
 
+
+            #changes text on button when hovering over
             menu_button.changeColor(pygame.mouse.get_pos(),"green")
             play_button.changeColor(pygame.mouse.get_pos(), "green")
+            #renders all buttons to the screen
             menu_button.update()
             play_button.update()
 
@@ -736,6 +806,7 @@ def main():
 
 
         else:
+           #catches if the game state is on a state not found above; and if that is the case the enum needs to lose that state
             print("State Does not Exist")
 
         
