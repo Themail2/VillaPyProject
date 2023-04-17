@@ -43,6 +43,9 @@ import pygame
 import random
 from enum import Enum, unique
 import json as serializer
+from json import dumps
+from datetime import date, timedelta
+import operator
 
 
 #We Initialize the window handle, window name, and constants before Class and Function delcarations for readablity
@@ -94,7 +97,11 @@ gridMargin = 1
 
 #fonts used through out the project
 font=pygame.font.Font('ARCADE_I.TTF',25)
+boardfont=pygame.font.Font('ARCADE_I.TTF',15)
 ScoreFont=pygame.font.Font('ARCADE_I.TTF',35)
+
+SavedScores={}
+
 
 def ren_pic(image, x_pos, y_pos):
     #takes in the position and image object to render on to screen
@@ -120,7 +127,11 @@ def LoadBackGround(image):
 
 #writes to json file with score and date
 def write_score(fileName, date, score):
-    scores = read_scores(fileName)
+    try:
+        scores = read_scores(fileName)
+    except:
+        scores={}
+        print("File does not exist")
     # add score 
     scores[date] = score
     with open(fileName, 'w') as f:
@@ -505,7 +516,7 @@ def main():
 
 
     #instanitated the game state enum to determine what needs to be rendered
-    GameState=state(state.Menu)
+    GameState=state(state.YouLose)
 
     run = True
     # Used to manage how fast the screen updates
@@ -655,6 +666,9 @@ def main():
 
                         if score_button.checkForInput(pygame.mouse.get_pos()) == True:
                             #changes state to score baord
+                            #grabs data and reads to empty dict
+                            SavedScores=read_scores("SaveData")
+                            SavedScores = dict(sorted(SavedScores.items(), key=operator.itemgetter(1), reverse=True)[:5])
                             GameState=state(state.ScoreBoard)
                             
                             
@@ -685,7 +699,7 @@ def main():
 
 
         elif(GameState==state.ScoreBoard):
-
+            spacing=.2
             #instaniates the buttons class for main menu and sets there placement 
             menu_button_surface = pygame.image.load("Start_button.png")
             menu_button_surface = pygame.transform.scale(menu_button_surface, (300, 100))
@@ -712,7 +726,10 @@ def main():
 
             #renders the title for the score board
             ren_text('Score-Board :)',font,width*.5,height*.1)
-
+            
+            for item in SavedScores:
+                ren_text(f"Date:{str(item)} Score:{str(item[0])}",boardfont,width*.5,height*spacing)
+                spacing+=.1
 
             #changes text on button when hovering over
             menu_button.changeColor(pygame.mouse.get_pos(),"green")
@@ -746,12 +763,14 @@ def main():
                     if menu_button.checkForInput(pygame.mouse.get_pos()) == True:
                         #goes to menu and resets the grid object
                         GameState=state(state.Menu)
+                        write_score("SaveData",date.today().strftime("%m/%d/%Y"),grid.score)
                         grid.reset()
                    
                     if play_button.checkForInput(pygame.mouse.get_pos()) == True:
                         #goes to game state and resets the grid object
                         print("The game opened I promise")
                         GameState=state(state.Game)
+                        write_score("SaveData",date.today().strftime("%m/%d/%Y"),grid.score)
                         grid.reset()
                        
 
