@@ -23,6 +23,6 @@ balkta@villa.edu
 ------------------------------------------------
 This project is open source!
 To contribute to this project, fork the repository at
-https://github.com/Themail2/VillaPyProjRepo
+https://github.com/Themail2/VillaPyProject
 Submit a merge request and I will get back to you!
 ------------------------------------------------
